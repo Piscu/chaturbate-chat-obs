@@ -278,32 +278,6 @@ data/                   config.json, assets/, emotes/  (generado, ignorado por G
 
 ---
 
-## 10. Publicar una versión para otros
-
-```bash
-node empaquetar.mjs
-```
-
-Genera `dist/ChatOBS-<versión>-win-x64.zip` y una copia con nombre estable,
-`dist/ChatOBS-win-x64.zip`, que es la que enlaza el README mediante
-`/releases/latest/download/`. El script copia **solo** una lista blanca de
-archivos y aborta si encuentra un `config.json` o el token, el usuario o el
-título guardados en `data/config.json`. `data/` nunca entra en el ZIP.
-
-Para publicarla:
-
-```bash
-gh release create v1.0.0 dist/ChatOBS-win-x64.zip --title "v1.0.0" --notes "Primera versión"
-```
-
-Para probar el empaquetado sin descargar los ~90 MB de `node.exe`:
-
-```bash
-node empaquetar.mjs --skip-node
-```
-
----
-
 ## Licencia
 
 MIT. Consulta `LICENSE`.
