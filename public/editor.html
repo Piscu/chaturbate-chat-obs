@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor - Chat Chaturbate para OBS</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/css/editor.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-mark">CB</span>
+      <div>
+        <h1>Chat de Chaturbate para OBS</h1>
+        <p id="brandSub">Fuente de navegador con configuracion en vivo</p>
+      </div>
+    </div>
+
+    <div class="topbar-search">
+      <input id="search" type="search" placeholder="Buscar ajuste (p. ej. fuente, insignia, tip)" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="topbar-status">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">Conectando...</span>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="btnObs" class="btn ghost" type="button">Como añadirlo a OBS</button>
+      <button id="btnReset" class="btn ghost" type="button">Restablecer</button>
+      <button id="btnSave" class="btn primary" type="button">Guardar cambios</button>
+    </div>
+  </header>
+
+  <div id="saveHint" class="save-hint">Hay cambios sin guardar</div>
+
+  <main class="layout">
+    <section class="settings">
+      <nav class="tabs" id="tabs"></nav>
+      <div class="panes" id="panes"></div>
+    </section>
+
+    <aside class="preview">
+      <div class="preview-head">
+        <strong>Vista previa</strong>
+        <div class="preview-tools">
+          <select id="previewSize" class="mini-select" title="Tamano del lienzo">
+            <option value="420x560">420 x 560</option>
+            <option value="360x640">360 x 640</option>
+            <option value="500x400">500 x 400</option>
+            <option value="700x300">700 x 300</option>
+            <option value="300x700">300 x 700</option>
+            <option value="1080x200">1080 x 200</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="previewGrid"> Fondo</label>
+          <button id="btnReplay" class="btn tiny" type="button">Reenviar demo</button>
+        </div>
+      </div>
+      <div class="preview-stage" id="previewStage">
+        <div class="grid-bg" id="gridBg"></div>
+        <iframe id="previewFrame" title="Vista previa de la fuente" src="/source?preview=1"></iframe>
+      </div>
+      <p class="preview-note">
+        La demo usa mensajes de ejemplo. Cuando guardes, la fuente de OBS connecteda
+        con el chat real.
+      </p>
+    </aside>
+  </main>
+
+  <dialog id="obsDialog" class="dialog">
+    <h2>Añadir la fuente a OBS</h2>
+    <ol class="steps">
+      <li>En OBS, en <strong>Fuentes</strong>, pulsa <strong>+</strong> y elige <strong>Navegador</strong>.</li>
+      <li>En <strong>URL</strong> pega: <code id="obsUrl" class="copyable"></code></li>
+      <li>En <strong>Alto</strong> y <strong>Ancho</strong> escribe los valores de la pestaña
+          <em>Diseno y tamaño</em>: <strong id="obsSize" class="copyable"></strong></li>
+      <li>Pulsa <strong>Aceptar</strong>. La fuente se actualiza sola al guardar cambios aqui.</li>
+    </ol>
+    <p class="muted">
+      Si quieres el chat y la marquesina por separado, añade dos fuentes: anade
+      <code>marquee=1</code> a la URL (por ejemplo <code id="obsUrl2" class="copyable"></code>)
+      para mostrar solo la marquesina.
+    </p>
+    <div class="dialog-actions">
+      <button id="btnCopyUrl" class="btn" type="button">Copiar URL</button>
+      <button id="btnCloseObs" class="btn primary" type="button">Cerrar</button>
+    </div>
+  </dialog>
+
+  <dialog id="assetDialog" class="dialog">
+    <h2>Biblioteca de imagenes</h2>
+    <div id="assetGrid" class="asset-grid"></div>
+    <div class="dialog-actions">
+      <label class="btn" for="assetUpload">Subir imagen</label>
+      <input type="file" id="assetUpload" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+      <button id="btnCloseAssets" class="btn primary" type="button">Cerrar</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="/js/editor.mjs"></script>
+</body>
+</html>

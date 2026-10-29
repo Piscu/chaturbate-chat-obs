@@ -1,0 +1,456 @@
+/* ============================================================
+   Fuente de OBS: chat + marquesina del tip menu
+   Todos los valores vienen de variables CSS que fija config.mjs
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  color: var(--text-color, #e9e9f5);
+  font-family: var(--font-family, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* El escenario ocupa toda la fuente; el panel se posiciona dentro. */
+#stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* Capa del fondo: vive en ::before para que su opacidad NO afecte al chat.
+   La imagen y el ajuste llegan por variables CSS desde source.mjs. */
+#stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--bg-image, none);
+  background-size: var(--bg-fit, cover);
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: var(--bg-opacity, 1);
+  pointer-events: none;
+}
+
+#stage.preview { background: #14141f; }
+
+#panel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--panel-gap, 12px);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* --------------------------------------------------- insignia de directo */
+
+#liveBadge {
+  display: none;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(var(--backdrop-blur, 8px));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur, 8px));
+}
+#liveBadge.on { display: flex; }
+#liveBadge .dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #ff2e4d;
+  box-shadow: 0 0 10px #ff2e4d;
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+#liveBadge.offline .dot { background: #6b6b80; box-shadow: none; animation: none; }
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.82); }
+}
+
+/* --------------------------------------------------- cabecera opcional */
+
+#header {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--panel-radius, 14px);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(var(--backdrop-blur, 8px));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur, 8px));
+}
+#header.on { display: flex; }
+#header .title {
+  font-size: 14px; font-weight: 800; letter-spacing: 0.04em;
+  color: var(--accent-color, #ff2e88);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#header #logo { max-height: 34px; width: auto; object-fit: contain; }
+
+#connBadge {
+  display: none;
+  margin-left: auto;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffd166;
+  white-space: nowrap;
+}
+#connBadge.on { display: block; }
+#connBadge.error { color: #ff6b6b; }
+#connBadge.live { color: #4ade80; }
+
+/* --------------------------------------------------- lista de chat */
+
+#chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--chat-gap, 6px);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  justify-content: flex-end;
+  padding: 10px;
+  border-radius: var(--panel-radius, 14px);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(var(--backdrop-blur, 8px));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur, 8px));
+  scrollbar-width: none;
+}
+#chat::-webkit-scrollbar { display: none; }
+#chat.off { display: none; }
+
+.msg {
+  display: block;
+  font-size: var(--chat-font-size, 18px);
+  line-height: var(--chat-line-height, 1.45);
+  font-weight: var(--chat-font-weight, 600);
+  color: var(--message-color, #dcdce8);
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.msg.anim-fade { animation-name: aFade; }
+.msg.anim-slide { animation-name: aSlide; }
+.msg.anim-pop { animation-name: aPop; }
+.msg.anim-bounce { animation-name: aBounce; }
+.msg.anim-none { animation: none; }
+
+@keyframes aFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes aSlide { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@keyframes aPop { from { opacity: 0; transform: scale(0.86); } to { opacity: 1; transform: none; } }
+@keyframes aBounce {
+  0% { opacity: 0; transform: translateY(14px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.02); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* Los avatares e insignias van en linea, igual que en el chat de Chaturbate. */
+.msg .avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar-size, 26px);
+  height: var(--avatar-size, 26px);
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #0b0b12;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+.msg img.avatar { display: inline-block; }
+
+.msg .badge {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: var(--badge-size, 15px);
+  line-height: 1;
+  margin-right: 1px;
+  flex: 0 0 auto;
+}
+
+.msg .ts {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 0.68em;
+  font-weight: 700;
+  opacity: 0.55;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-right: 5px;
+}
+
+.msg .user {
+  font-weight: 800;
+  color: var(--user-color, #fff);
+  white-space: nowrap;
+}
+.msg .colon { color: var(--message-color, #dcdce8); opacity: 0.7; margin-right: 4px; }
+.msg .text { color: var(--message-color, #dcdce8); }
+.msg .tip-sep { opacity: 0.6; margin: 0 6px; }
+
+.msg .emote {
+  height: var(--emote-size, 22px);
+  width: auto;
+  max-width: none;
+  vertical-align: text-bottom;
+  margin: 0 1px;
+}
+.msg .emote.baseline { vertical-align: baseline; }
+.msg .emote-code { color: var(--accent-color, #ff2e88); font-weight: 700; }
+
+.msg .notice-text { color: inherit; font-weight: 700; white-space: pre-wrap; }
+
+/* Agrupa lineas consecutivas del mismo usuario. */
+.msg.grouped .avatar,
+.msg.grouped .badge,
+.msg.grouped .user,
+.msg.grouped .colon,
+.msg.grouped .ts { display: none; }
+.msg.grouped { margin-top: -2px; }
+
+/* --------------------------------------------------- estilos de mensaje */
+
+/* Cajas (burbuja, tarjeta, cristal, barra lateral): el bloque se ajusta al
+   contenido y respira con el relleno configurado. Los eventos conservan su
+   propio estilo (gradientes y colores) gracias al :not(.ev). */
+#chat.style-bubble .msg:not(.ev),
+#chat.style-card .msg:not(.ev),
+#chat.style-glass .msg:not(.ev),
+#chat.style-outline .msg:not(.ev),
+#chat.style-saber .msg:not(.ev) {
+  width: fit-content;
+  max-width: 100%;
+  padding: var(--msg-pad-y, 6px) var(--msg-pad-x, 12px);
+  border-radius: var(--msg-radius, 12px);
+}
+#chat.style-bubble .msg:not(.ev) { background: var(--msg-bg, rgba(255, 255, 255, 0.07)); }
+#chat.style-card .msg:not(.ev) {
+  background: var(--msg-bg, rgba(255, 255, 255, 0.07));
+  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.12));
+}
+#chat.style-glass .msg:not(.ev) {
+  background: var(--msg-bg, rgba(20, 20, 34, 0.42));
+  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.12));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+#chat.style-outline .msg:not(.ev) {
+  background: var(--msg-bg, rgba(255, 255, 255, 0.05));
+  border-left: 3px solid var(--accent-color, #ff2e88);
+}
+/* Sable de luz: barra lateral luminosa con degradado hacia el fondo del
+   mensaje. El halo (--msg-glow) se deriva del color de acento en source.mjs. */
+#chat.style-saber .msg:not(.ev) {
+  background: linear-gradient(90deg, var(--msg-glow, rgba(255, 232, 31, 0.38)), var(--msg-bg, rgba(255, 232, 31, 0.05)) 55%);
+  border-left: 3px solid var(--accent-color, #ffe81f);
+  box-shadow: -2px 0 14px -2px var(--msg-glow, rgba(255, 232, 31, 0.38));
+}
+#chat.style-zebra .msg:nth-child(even):not(.ev) {
+  background: var(--msg-bg, rgba(255, 255, 255, 0.07));
+  border-radius: var(--msg-radius, 10px);
+}
+
+/* En los estilos con caja no encogemos el margen de las lineas agrupadas. */
+#chat.style-bubble .msg.grouped,
+#chat.style-card .msg.grouped,
+#chat.style-glass .msg.grouped,
+#chat.style-outline .msg.grouped,
+#chat.style-saber .msg.grouped { margin-top: 0; }
+
+/* Separadores entre mensajes. */
+#chat.dividers .msg + .msg:not(.ev) {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  padding-top: calc(var(--msg-pad-y, 6px) + 4px);
+}
+#chat.dividers .msg.grouped + .msg { border-top: 0; padding-top: 0; }
+
+/* Nombre */
+#chat.username-normal .msg .user { font-weight: 600; }
+#chat.username-bold .msg .user { font-weight: 800; }
+#chat.username-uppercase .msg .user { font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.94em; }
+#chat.username-italic .msg .user { font-weight: 700; font-style: italic; }
+#chat.username-outline .msg .user { font-weight: 800; -webkit-text-stroke: 1.1px rgba(0, 0, 0, 0.7); paint-order: stroke fill; }
+#chat.username-glow .msg .user { text-shadow: 0 0 9px currentColor; }
+/* Borde negro del nombre: se combina con cualquier estilo y con el brillo,
+   porque no toca text-shadow. */
+#chat.username-stroke .msg .user {
+  -webkit-text-stroke: 1.6px rgba(0, 0, 0, 0.92);
+  paint-order: stroke fill;
+}
+
+/* Legibilidad del texto sobre video claro. */
+#chat.text-shadow .msg { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.55); }
+
+/* Forma del avatar. */
+#chat.avatar-rounded .msg .avatar { border-radius: 30%; }
+#chat.avatar-square .msg .avatar { border-radius: 16%; }
+
+
+/* --------------------------------------------------- eventos destacados */
+
+.msg.ev {
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.msg.ev .text { font-weight: inherit; }
+
+.msg.tip {
+  background: linear-gradient(90deg, var(--tip-accent, #ff2e88) 0%, rgba(255, 46, 136, 0) 65%);
+  border-left: 3px solid var(--tip-accent, #ff2e88);
+  color: #fff;
+}
+.msg.tip .amount {
+  color: #fff;
+  font-weight: 900;
+  text-shadow: 0 0 14px var(--tip-accent, #ff2e88);
+  margin-right: 4px;
+}
+
+.msg.media {
+  background: linear-gradient(90deg, #00d0ff 0%, rgba(0, 208, 255, 0) 65%);
+  border-left: 3px solid #00d0ff;
+  color: #fff;
+}
+
+.msg.notice {
+  background: rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--accent-color, #ff2e88);
+  color: var(--notice-color, #ffffff);
+  font-weight: 700;
+  white-space: pre-wrap;
+}
+
+.msg.system { color: #9aa; font-weight: 600; font-size: 0.86em; opacity: 0.9; }
+.msg.system.follow { color: #ff7ab8; }
+.msg.system.fanclub { color: #ffb02e; }
+.msg.system.join { color: #7ee787; }
+
+.msg.private {
+  background: rgba(120, 90, 200, 0.22);
+  border-left: 3px solid #9d7bff;
+  color: #fff;
+}
+
+/* --------------------------------------------------- marquesina */
+
+#marquee {
+  position: relative;
+  display: none;
+  align-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  width: 100%;
+  height: var(--marquee-height, 46px);
+  border-radius: var(--panel-radius, 14px);
+  background: var(--marquee-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(var(--backdrop-blur, 8px));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur, 8px));
+}
+#marquee.on { display: flex; }
+#marquee.only { flex: 1 1 auto; }
+#marquee.pausable:hover .mq-track { animation-play-state: paused; }
+#marquee.fade-edges {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.mq-track {
+  display: flex;
+  flex: 0 0 auto;
+  width: max-content;
+  will-change: transform;
+  animation-name: mqLeft;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+#marquee.right .mq-track { animation-name: mqRight; }
+#marquee.paused .mq-track { animation-play-state: paused; }
+
+@keyframes mqLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes mqRight {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+#marquee.noloop .mq-track { animation-iteration-count: 1; animation-fill-mode: both; }
+
+.mq-group {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.mq-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--marquee-font-size, 17px);
+  font-weight: var(--marquee-font-weight, 600);
+  color: var(--marquee-color, #fff);
+  white-space: nowrap;
+}
+.mq-item img { height: 1.35em; width: auto; object-fit: contain; }
+.mq-item .amount { font-weight: 900; opacity: 1; }
+.mq-sep { opacity: 0.5; padding: 0 calc(var(--marquee-item-gap, 36px) / 2); }
+
+#marqueeEmpty {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 13px;
+  opacity: 0.5;
+}
+#marquee.empty #marqueeEmpty { display: flex; }
+
+/* --------------------------------------------------- depuracion */
+
+#debug {
+  position: absolute;
+  left: 4px; bottom: 4px;
+  max-width: 90%;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #7CFC00;
+  font: 11px/1.35 "Courier New", monospace;
+  white-space: pre-wrap;
+  display: none;
+  z-index: 99;
+}
+#debug.on { display: block; }

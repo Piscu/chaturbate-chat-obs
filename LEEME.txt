@@ -1,0 +1,69 @@
+========================================
+  CHAT DE CHATURBATE PARA OBS
+========================================
+
+Qué es
+------
+Una fuente de navegador para OBS que muestra el chat en directo de tu sala de
+Chaturbate y una marquesina con tu tip menu. Todo el diseño se cambia desde un
+editor web, sin tocar código.
+
+No hay que instalar nada: este paquete ya incluye lo necesario.
+
+
+Cómo ejecutarlo
+---------------
+1. Descomprime la carpeta donde quieras: el Escritorio, Documentos o una carpeta
+   propia. No la pongas en "Archivos de programa": el programa necesita escribir
+   dentro de su carpeta.
+
+2. Haz doble clic en "iniciar.bat".
+   - Se abre una ventana negra. NO la cierres mientras estés en directo.
+   - Se abre el editor en tu navegador (http://127.0.0.1:8017/).
+   - Si Windows muestra un aviso de seguridad, pulsa "Más información" y luego
+     "Ejecutar de todas formas". Solo pasa la primera vez.
+
+3. En el editor, pestaña "Conexión":
+   - Escribe tu usuario de Chaturbate.
+   - Pega tu token de la Events API.
+   - Pulsa "Guardar".
+   El token se genera en https://chaturbate.com/statsapi/authtoken/ con el
+   alcance "Events API". Si quieres ver tips y mensajes privados, usa un token
+   con alcance privado.
+
+4. En OBS: Fuentes > + > Navegador.
+   - URL: http://127.0.0.1:8017/source?w=420&h=560
+     Cambia 420 y 560 por el ancho y alto que hayas puesto en el editor.
+   - Ancho y alto: los mismos valores.
+   - CSS personalizado: déjalo vacío.
+   - Marca "Actualizar cuando se vuelve visible".
+
+5. Cambia colores, temas, tamaño y el tip menu desde el editor. Cada cambio hay
+   que pulsarlo en "Guardar" para que llegue a OBS.
+
+6. Para parar el programa: cierra la ventana negra o pulsa Ctrl+C.
+
+
+Si algo no funciona
+-------------------
+- El chat sale vacío: revisa que el token esté guardado y que estés en directo.
+  El estado se ve en el editor y en http://127.0.0.1:8017/api/status
+- "No se encontro Node.js": usa el paquete completo, que incluye node.exe, o
+  instala Node.js 18 o superior desde https://nodejs.org/
+- El puerto 8017 está ocupado: el programa prueba el 8018, 8019... y te muestra
+  la dirección correcta en la ventana negra. Usa esa misma en OBS.
+- La fuente no carga en OBS: comprueba que la ventana negra siga abierta y que
+  la URL tenga el mismo puerto que muestra el programa.
+- No ves tus propios mensajes: es a propósito, para no duplicar tu chat en tu
+  propio stream. Se activa en "Chat > Mostrar mis mensajes" mientras pruebas.
+
+
+Privacidad
+----------
+Tu token y tu configuración se guardan SOLO en la carpeta "data" de este
+programa, en tu ordenador. No se envían a ningún servidor nuestro.
+
+No compartas la carpeta "data" ni la subas a internet: contiene tu token.
+
+Para hacer una copia de seguridad, copia la carpeta "data" completa. Para
+empezar de cero, bórrala (perderás el token y los ajustes).
